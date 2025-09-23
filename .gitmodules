@@ -1,3 +1,4 @@
 [submodule "docs"]
 	path = docs
 	url = https://github.com/Antiguru2/merge_manager_docs.git
+	branch = main
