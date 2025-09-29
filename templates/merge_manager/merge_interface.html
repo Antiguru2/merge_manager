@@ -1,0 +1,1590 @@
+{% extends "main/base.html" %}
+
+{% block title %}Объединение объектов{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --mm-bg: #f3f6fb;
+        --mm-card: #ffffff;
+        --mm-accent: #45b36b;
+        --mm-accent-light: #e5f6ec;
+        --mm-text: #0d2339;
+        --mm-muted: #64748b;
+        --mm-border: #d8e2ef;
+        --mm-danger: #ef476f;
+        --mm-warning: #f7b267;
+        --mm-success: #06d6a0;
+    }
+
+    body {
+        background: var(--mm-bg);
+        color: var(--mm-text);
+    }
+
+    .merge-page {
+        max-width: 1280px;
+        margin: 24px auto 80px;
+        padding: 0 20px 40px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .merge-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .merge-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--mm-text);
+        margin-bottom: 12px;
+    }
+
+    .merge-header p {
+        color: var(--mm-muted);
+        font-size: 16px;
+        line-height: 1.5;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    .status-strip {
+        margin-top: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--mm-accent-light);
+        color: var(--mm-accent);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .status-pill.success {
+        background: rgba(6, 214, 160, 0.16);
+        color: var(--mm-success);
+    }
+
+    .status-pill.warn {
+        background: rgba(247, 178, 103, 0.16);
+        color: var(--mm-warning);
+    }
+
+    .status-pill.error {
+        background: rgba(239, 71, 111, 0.18);
+        color: var(--mm-danger);
+    }
+
+    .loading-dots {
+        display: inline-flex;
+        gap: 3px;
+        position: relative;
+        top: -1px;
+    }
+
+    .loading-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: dotBlink 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes dotBlink {
+        0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+        40% { opacity: 1; transform: translateY(-1px); }
+    }
+
+    .layout-columns {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+
+    .left-column {
+        display: grid;
+        gap: 20px;
+    }
+
+    .panel {
+        background: var(--mm-card);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.05);
+        border: 1px solid var(--mm-border);
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .panel-header-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .panel-header-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--mm-text);
+    }
+
+    .panel-toggle {
+        border: none;
+        background: rgba(69, 179, 107, 0.12);
+        color: var(--mm-accent);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .panel-toggle:hover,
+    .panel-toggle:focus {
+        background: var(--mm-accent);
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(69, 179, 107, 0.35);
+        outline: none;
+    }
+
+    .panel-explainer {
+        background: rgba(69, 179, 107, 0.08);
+        border: 1px solid rgba(69, 179, 107, 0.3);
+        border-radius: 14px;
+        padding: 16px;
+        font-size: 14px;
+        color: var(--mm-text);
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .panel-explainer p {
+        margin: 0;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--mm-accent-light);
+        color: var(--mm-accent);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .panel-body {
+        display: grid;
+        gap: 16px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--mm-text);
+    }
+
+    .field-description {
+        font-size: 13px;
+        color: var(--mm-muted);
+        line-height: 1.45;
+    }
+
+    select,
+    input[type="search"],
+    textarea {
+        border: 1px solid var(--mm-border);
+        background: #f9fbff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 15px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        outline: none;
+    }
+
+    select:focus,
+    input[type="search"]:focus,
+    textarea:focus {
+        border-color: var(--mm-accent);
+        box-shadow: 0 0 0 3px rgba(69, 179, 107, 0.2);
+    }
+
+    select:disabled {
+        background: #f5f7fb;
+        color: var(--mm-muted);
+        cursor: not-allowed;
+    }
+
+    .profile-summary {
+        background: rgba(69, 179, 107, 0.06);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(69, 179, 107, 0.2);
+    }
+
+    .profile-summary.highlight {
+        background: rgba(69, 179, 107, 0.1);
+        border-color: rgba(69, 179, 107, 0.3);
+    }
+
+    .profile-summary h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--mm-text);
+    }
+
+    .profile-summary ul {
+        list-style: none;
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--mm-muted);
+        padding-left: 0;
+    }
+
+    .profile-summary code {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+        background: rgba(15, 23, 42, 0.04);
+        padding: 2px 6px;
+        border-radius: 6px;
+        color: var(--mm-text);
+    }
+
+    .entity-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .entity-columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+    }
+
+    .entity-card {
+        border: 1px dashed var(--mm-border);
+        border-radius: 14px;
+        padding: 18px;
+        background: rgba(69, 179, 107, 0.04);
+        position: relative;
+    }
+
+    .entity-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--mm-text);
+        margin-bottom: 12px;
+    }
+
+    .entity-card p {
+        color: var(--mm-muted);
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .entity-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+        position: relative;
+    }
+
+    .entity-selector {
+        display: grid;
+        gap: 8px;
+    }
+
+    .entity-filter {
+        position: relative;
+    }
+
+    .entity-filter input[type="search"] {
+        width: 100%;
+        padding-right: 44px;
+    }
+
+    .clear-btn {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        border: none;
+        background: rgba(15, 23, 42, 0.06);
+        color: var(--mm-muted);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .clear-btn:hover {
+        background: rgba(239, 71, 111, 0.16);
+        color: var(--mm-danger);
+    }
+
+    .entity-list {
+        background: #fff;
+        border: 1px solid var(--mm-border);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px;
+        display: grid;
+        gap: 4px;
+    }
+
+    .entity-option {
+        text-align: left;
+        background: #f8fafc;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        display: grid;
+        gap: 4px;
+        transition: background 0.2s ease, border-color 0.2s ease;
+        font-size: 14px;
+        position: relative;
+        padding-right: 42px;
+    }
+
+    .entity-option:hover {
+        background: rgba(69, 179, 107, 0.12);
+        border-color: rgba(69, 179, 107, 0.4);
+    }
+
+    .entity-option.selected {
+        background: rgba(69, 179, 107, 0.18);
+        border-color: rgba(69, 179, 107, 0.5);
+    }
+
+    .entity-option small {
+        font-size: 12px;
+        color: var(--mm-muted);
+    }
+
+    .entity-list-empty {
+        font-size: 13px;
+        color: var(--mm-muted);
+        padding: 12px 10px;
+        text-align: center;
+        background: rgba(15, 23, 42, 0.02);
+        border-radius: 10px;
+        display: grid;
+        gap: 4px;
+    }
+
+    .entity-extra-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .entity-edit {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.06);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .entity-edit:hover {
+        background: rgba(69, 179, 107, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .entity-edit svg {
+        width: 14px;
+        height: 14px;
+        fill: var(--mm-accent);
+    }
+
+    .link-button {
+        background: none;
+        border: none;
+        color: var(--mm-accent);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .link-button:hover {
+        text-decoration: underline;
+    }
+
+    .entity-extra {
+        font-size: 13px;
+        color: var(--mm-muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .entity-extra strong {
+        color: var(--mm-text);
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .preview-section {
+        display: grid;
+        gap: 16px;
+    }
+
+    .preview-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 13px;
+        color: var(--mm-muted);
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .info-card {
+        background: rgba(69, 179, 107, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        border: 1px solid rgba(69, 179, 107, 0.18);
+        display: grid;
+        gap: 10px;
+    }
+
+    .info-card h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--mm-text);
+    }
+
+    .info-card p {
+        font-size: 13px;
+        color: var(--mm-muted);
+        line-height: 1.5;
+    }
+
+    .info-card .placeholder,
+    .summary-box.placeholder {
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px dashed rgba(69, 179, 107, 0.4);
+        color: var(--mm-muted);
+        font-size: 13px;
+    }
+
+    .summary-box {
+        border-radius: 14px;
+        padding: 20px;
+        background: rgba(69, 179, 107, 0.1);
+        border: 1px solid rgba(69, 179, 107, 0.3);
+        color: var(--mm-text);
+        line-height: 1.5;
+        font-size: 14px;
+    }
+
+    details {
+        background: #fff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        border: 1px solid var(--mm-border);
+    }
+
+    details + details {
+        margin-top: 8px;
+    }
+
+    summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--mm-text);
+    }
+
+    .difference-item,
+    .relation-item {
+        border-radius: 10px;
+        border: 1px dashed rgba(69, 179, 107, 0.35);
+        background: rgba(69, 179, 107, 0.05);
+        padding: 12px 14px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .difference-values {
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--mm-muted);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: rgba(15, 23, 42, 0.08);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mm-text);
+    }
+
+    .badge.strategy {
+        background: rgba(69, 179, 107, 0.16);
+        color: var(--mm-accent);
+    }
+
+    .cta {
+        text-align: center;
+        margin-top: 28px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .cta button {
+        border: none;
+        border-radius: 999px;
+        padding: 14px 36px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        background: var(--mm-accent);
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .cta button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(69, 179, 107, 0.25);
+    }
+
+    .cta button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .cta button.loading {
+        background: rgba(69, 179, 107, 0.65);
+    }
+
+    .error-banner,
+    .error-inline {
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: rgba(239, 71, 111, 0.12);
+        color: var(--mm-danger);
+        border: 1px solid rgba(239, 71, 111, 0.2);
+        font-size: 13px;
+    }
+
+    .error-banner {
+        max-width: 480px;
+    }
+
+    .info-inline {
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: rgba(69, 179, 107, 0.12);
+        color: var(--mm-text);
+        border: 1px solid rgba(69, 179, 107, 0.2);
+        font-size: 13px;
+    }
+
+    .warning-list {
+        list-style: none;
+        display: grid;
+        gap: 6px;
+        padding-left: 0;
+        font-size: 13px;
+        color: var(--mm-danger);
+    }
+
+    .skeleton-line {
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(183, 199, 216, 0.3) 0%, rgba(183, 199, 216, 0.6) 50%, rgba(183, 199, 216, 0.3) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.6s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 1024px) {
+        .layout-columns {
+            grid-template-columns: 1fr;
+        }
+
+        .merge-header h1 {
+            font-size: 24px;
+        }
+    }
+    [x-cloak] {
+        display: none !important;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="merge-page" x-data="mergeManager">
+    <header class="merge-header">
+        <h1>Объединение записей</h1>
+        <p>Следуйте шагам ниже, чтобы выбрать нужные объекты и аккуратно перенести данные из донора в приёмник.</p>
+        <div class="status-strip">
+            <template x-if="loading.profiles">
+                <span class="status-pill">
+                    Загружаем профили
+                    <span class="loading-dots"><span></span><span></span><span></span></span>
+                </span>
+            </template>
+            <template x-if="previewReady()">
+                <span class="status-pill success" x-text="`Предпросмотр обновлён в ${formatTimestamp(preview.updatedAt)}`"></span>
+            </template>
+            <template x-if="errors.global">
+                <div class="error-banner" x-text="errors.global"></div>
+            </template>
+        </div>
+    </header>
+
+    <div class="layout-columns">
+        <div class="left-column">
+            <section class="panel" x-data="{ showInfo: false }">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <span class="chip">Шаг 1</span>
+                        <span class="panel-header-title">Выбор профиля объединения</span>
+                    </div>
+                    <button type="button"
+                            class="panel-toggle"
+                            @click="showInfo = !showInfo"
+                            :aria-expanded="showInfo"
+                            aria-controls="step1-explainer">
+                        <span x-text="showInfo ? 'Скрыть пояснение' : 'Пояснение к шагу'"></span>
+                    </button>
+                </div>
+                <div class="panel-explainer" id="step1-explainer" x-show="showInfo" x-transition x-cloak>
+                    <p>Профиль определяет набор данных и правила объединения. Выберите тот, что подходит задаче. При смене профиля выбранные объекты и предпросмотр будут очищены.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="field">
+                        <label for="profile">Профиль</label>
+                        <p class="field-description">Профиль задаёт, с какими записями можно работать и как система сравнивает поля при объединении.</p>
+                        <select id="profile" name="profile"
+                                x-model="selectedProfileSlug"
+                                @change="handleProfileChange()"
+                                :disabled="loading.profiles || !profiles.length">
+                            <option value="" disabled x-show="!profiles.length">Профили не найдены</option>
+                            <template x-for="profile in profiles" :key="profile.slug || profile.label">
+                                <option :value="profile.slug || profile.label"
+                                        x-text="profile.label || profile.slug"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <template x-if="errors.profile">
+                        <div class="error-inline" x-text="errors.profile"></div>
+                    </template>
+
+                    <template x-if="loading.profileMeta">
+                        <div class="profile-summary">
+                            <div class="skeleton-line" style="width: 40%;"></div>
+                            <div class="skeleton-line" style="width: 70%; margin-top: 10px;"></div>
+                            <div class="skeleton-line" style="width: 55%; margin-top: 6px;"></div>
+                        </div>
+                    </template>
+
+                    <template x-if="profileMeta">
+                        <div class="profile-summary">
+                            <h3>Что настроено в профиле</h3>
+                            <ul>
+                                <li>Тип данных: <code x-text="profileMeta.model_label || profileMeta.model"></code></li>
+                                <li>Настроек по полям: <strong x-text="profileMeta.fields_count ?? profileMeta.strategies_count ?? (profileMeta.fields?.length || 0)"></strong></li>
+                                <li>
+                                    Обработка отключения записи: <code x-text="profileMeta.soft_delete_field || '—'"></code>
+                                    <template x-if="profileMeta.soft_delete_value !== undefined">
+                                        <span>→ значение <code x-text="profileMeta.soft_delete_value"></code></span>
+                                    </template>
+                                </li>
+                            </ul>
+                        </div>
+                    </template>
+
+                    <template x-if="prefilledDonor">
+                        <div class="profile-summary highlight">
+                            <h3 x-text="`ID ${prefilledDonor} уже подставлен в поиск донора`"></h3>
+                            <p class="field-description">Мы автоматически добавили ID из ссылки в поле поиска. При необходимости измените запрос.</p>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section class="panel" x-data="{ showInfo: false }">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <span class="chip">Шаг 2</span>
+                        <span class="panel-header-title">Выбор конкретных сущностей</span>
+                    </div>
+                    <button type="button"
+                            class="panel-toggle"
+                            @click="showInfo = !showInfo"
+                            :aria-expanded="showInfo"
+                            aria-controls="step2-explainer">
+                        <span x-text="showInfo ? 'Скрыть пояснение' : 'Пояснение к шагу'"></span>
+                    </button>
+                </div>
+                <div class="panel-explainer" id="step2-explainer" x-show="showInfo" x-transition x-cloak>
+                    <p>Сначала выберите приёмник — запись, которая останется после объединения. Затем найдите донора, из которого перенесём данные. Используйте поиск по ID или название.</p>
+                </div>
+                <div class="panel-body entity-grid">
+                    <div class="entity-columns">
+                        <div class="entity-card">
+                            <h3>Приёмник (целевой объект)</h3>
+                            <p>Это запись, которая останется после объединения. Найдите её по ID или названию и убедитесь, что именно она должна сохранить итоговые данные.</p>
+                            <div class="entity-actions">
+                                <div class="entity-selector">
+                                    <div class="entity-filter">
+                                        <input type="search"
+                                               name="target_filter"
+                                               placeholder="Фильтр по ID, названию..."
+                                               autocomplete="off"
+                                               x-model="filters.target"
+                                               @input.debounce.300ms="handleFilterChange('target')"
+                                               @keydown.escape.prevent="clearFilter('target')">
+                                        <button class="clear-btn" type="button" x-show="filters.target" @click="clearFilter('target')">×</button>
+                                    </div>
+                                    <div class="entity-list" role="listbox" aria-label="Кандидаты для приёмника">
+                                        <template x-if="loading.targetEntities">
+                                            <div class="entity-list-empty">Загружаем список объектов...</div>
+                                        </template>
+                                        <template x-for="(item, index) in filteredEntities('target')" :key="item.id || index">
+                                            <button type="button"
+                                                    class="entity-option"
+                                                    @click="selectEntity('target', item)"
+                                                    :class="{ 'selected': highlightSelected('target', item.id) }"
+                                                    :aria-selected="highlightSelected('target', item.id)">
+                                                <span x-text="item.display || item.label || item.name || `ID ${item.id}`"></span>
+                                                <small x-text="item.subtitle || (item.id ? `ID: ${item.id}` : '')"></small>
+                                                <template x-if="item.admin_change_url">
+                                                    <span class="entity-edit"
+                                                          role="link"
+                                                          tabindex="-1"
+                                                          :aria-label="`Редактировать ${item.display || item.label || item.name || 'объект'}`"
+                                                          title="Открыть в админке"
+                                                          @click.stop="openAdmin(item.admin_change_url)">
+                                                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                            <path d="M2 14.5V18h3.5l10.3-10.3-3.5-3.5L2 14.5zm15.7-9.8a.996.996 0 0 0 0-1.4l-2.4-2.4a.996.996 0 0 0-1.4 0l-1.8 1.8 3.5 3.5 1.8-1.8z"/>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                            </button>
+                                        </template>
+                                        <template x-if="!loading.targetEntities && !filteredEntities('target').length">
+                                            <div class="entity-list-empty">
+                                                <span>Совпадений не найдено.</span>
+                                                <button type="button" class="link-button" @click="forceReload('target')">Обновить список</button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="entity-extra">
+                                    <span>Выбрано: <strong x-text="getSelectedLabel('target')"></strong></span>
+                                    <div class="entity-extra-actions">
+                                        <span x-text="entityCountLabel('target')"></span>
+                                        <button type="button" class="link-button" x-show="selectedEntities.target" @click="clearSelection('target')">Сбросить выбор</button>
+                                    </div>
+                                </div>
+                                <template x-if="errors.target">
+                                    <div class="error-inline" x-text="errors.target"></div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="entity-card">
+                            <h3>Донор (источник данных)</h3>
+                            <p>Это источник данных. Всё выбранное у донора будет перенесено в приёмник. Используйте поиск, чтобы найти правильную запись.</p>
+                            <div class="entity-actions">
+                                <div class="entity-selector">
+                                    <div class="entity-filter">
+                                        <input type="search"
+                                               name="donor_filter"
+                                               placeholder="Фильтр по ID, названию..."
+                                               autocomplete="off"
+                                               x-model="filters.donor"
+                                               @input.debounce.300ms="handleFilterChange('donor')"
+                                               @keydown.escape.prevent="clearFilter('donor')">
+                                        <button class="clear-btn" type="button" x-show="filters.donor" @click="clearFilter('donor')">×</button>
+                                    </div>
+                                    <div class="entity-list" role="listbox" aria-label="Кандидаты для донора">
+                                        <template x-if="loading.donorEntities">
+                                            <div class="entity-list-empty">Подбираем подходящих доноров...</div>
+                                        </template>
+                                        <template x-for="(item, index) in filteredEntities('donor')" :key="item.id || index">
+                                            <button type="button"
+                                                    class="entity-option"
+                                                    @click="selectEntity('donor', item)"
+                                                    :class="{ 'selected': highlightSelected('donor', item.id) }"
+                                                    :aria-selected="highlightSelected('donor', item.id)">
+                                                <span x-text="item.display || item.label || item.name || `ID ${item.id}`"></span>
+                                                <small x-text="item.subtitle || (item.id ? `ID: ${item.id}` : '')"></small>
+                                                <template x-if="item.admin_change_url">
+                                                    <span class="entity-edit"
+                                                          role="link"
+                                                          tabindex="-1"
+                                                          :aria-label="`Редактировать ${item.display || item.label || item.name || 'объект'}`"
+                                                          title="Открыть в админке"
+                                                          @click.stop="openAdmin(item.admin_change_url)">
+                                                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                            <path d="M2 14.5V18h3.5l10.3-10.3-3.5-3.5L2 14.5zm15.7-9.8a.996.996 0 0 0 0-1.4l-2.4-2.4a.996.996 0 0 0-1.4 0l-1.8 1.8 3.5 3.5 1.8-1.8z"/>
+                                                        </svg>
+                                                    </span>
+                                                </template>
+                                            </button>
+                                        </template>
+                                        <template x-if="!loading.donorEntities && !filteredEntities('donor').length">
+                                            <div class="entity-list-empty">
+                                                <span>Совпадений не найдено.</span>
+                                                <button type="button" class="link-button" @click="forceReload('donor')">Обновить список</button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="entity-extra">
+                                    <span>Выбрано: <strong x-text="getSelectedLabel('donor')"></strong></span>
+                                    <div class="entity-extra-actions">
+                                        <span x-text="entityCountLabel('donor')"></span>
+                                        <button type="button" class="link-button" x-show="selectedEntities.donor" @click="clearSelection('donor')">Сбросить выбор</button>
+                                    </div>
+                                </div>
+                                <template x-if="errors.donor">
+                                    <div class="error-inline" x-text="errors.donor"></div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: none;" aria-hidden="true">
+                        <textarea name="merge_notes"
+                                  rows="3"
+                                  placeholder="Комментарий к операции (опционально)"
+                                  x-model="notes"
+                                  tabindex="-1"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel" x-data="{ showInfo: false }">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <span class="chip">Шаг 3</span>
+                        <span class="panel-header-title">Информация о выбранных объектах</span>
+                    </div>
+                    <button type="button"
+                            class="panel-toggle"
+                            @click="showInfo = !showInfo"
+                            :aria-expanded="showInfo"
+                            aria-controls="step3-explainer">
+                        <span x-text="showInfo ? 'Скрыть пояснение' : 'Пояснение к шагу'"></span>
+                    </button>
+                </div>
+                <div class="panel-explainer" id="step3-explainer" x-show="showInfo" x-transition x-cloak>
+                    <p>Здесь можно сравнить значения донора и приёмника до запуска объединения. Проверьте ключевые поля и предупреждения, чтобы убедиться, что перенос пройдёт так, как ожидается.</p>
+                </div>
+                <div class="panel-body info-grid">
+                    <template x-if="errors.preview">
+                        <div class="error-inline" x-text="errors.preview"></div>
+                    </template>
+
+                    <template x-if="loading.preview">
+                        <div class="summary-box placeholder">Строим сравнение и расчёт различий...</div>
+                    </template>
+
+                    <template x-if="!loading.preview && !previewReady()">
+                        <div class="summary-box placeholder">Выберите профиль, приёмник и донора — после этого появится предпросмотр различий.</div>
+                    </template>
+
+                    <template x-if="previewReady()">
+                        <div class="preview-section">
+                            <div class="preview-header">
+                                <span x-text="`Приёмник: ${getSelectedLabel('target')}`"></span>
+                                <span x-text="`Донор: ${getSelectedLabel('donor')}`"></span>
+                                <span x-text="`Данных к переносу: ${transferCount()}`"></span>
+                            </div>
+
+                            <details open>
+                                <summary>Краткое сравнение</summary>
+                                <div class="info-row">
+                                    <div class="info-card">
+                                        <h4>Приёмник</h4>
+                                        <template x-if="preview.data && preview.data.target_snapshot && preview.data.target_snapshot.length">
+                                            <div class="difference-values">
+                                                <template x-for="(item, index) in preview.data.target_snapshot" :key="item.label || index">
+                                                    <div><strong x-text="item.label || item.name"></strong>: <span x-text="formatValue(item.value)"></span></div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!(preview.data && preview.data.target_snapshot && preview.data.target_snapshot.length)">
+                                            <div class="placeholder">Ожидаем данные карточки целевого объекта.</div>
+                                        </template>
+                                    </div>
+                                    <div class="info-card">
+                                        <h4>Донор</h4>
+                                        <template x-if="preview.data && preview.data.donor_snapshot && preview.data.donor_snapshot.length">
+                                            <div class="difference-values">
+                                                <template x-for="(item, index) in preview.data.donor_snapshot" :key="item.label || index">
+                                                    <div><strong x-text="item.label || item.name"></strong>: <span x-text="formatValue(item.value)"></span></div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!(preview.data && preview.data.donor_snapshot && preview.data.donor_snapshot.length)">
+                                            <div class="placeholder">Пока нет краткой сводки по донору.</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <details>
+                                <summary>Полная информация и различия</summary>
+                                <div class="info-row">
+                                    <div class="info-card">
+                                        <h4>Поля с различиями</h4>
+                                        <template x-if="preview.data && preview.data.differences && preview.data.differences.length">
+                                            <div class="info-grid">
+                                                <template x-for="(diff, index) in preview.data.differences" :key="diff.field || index">
+                                                    <div class="difference-item">
+                                                        <span class="badge" x-text="diff.field || diff.name || 'Поле'"></span>
+                                                        <div class="difference-values">
+                                                            <div><strong>Приёмник:</strong> <span x-text="formatValue(diff.target)"></span></div>
+                                                            <div><strong>Донор:</strong> <span x-text="formatValue(diff.donor)"></span></div>
+                                                        </div>
+                                                        <template x-if="diff.strategy">
+                                                            <span class="badge strategy" x-text="`Стратегия: ${diff.strategy}`"></span>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!(preview.data && preview.data.differences && preview.data.differences.length)">
+                                            <p>Различий между объектами нет — значения совпадают или стратегии не меняют данные.</p>
+                                        </template>
+                                    </div>
+                                    <div class="info-card">
+                                        <h4>Связи</h4>
+                                        <template x-if="preview.data && preview.data.relations && preview.data.relations.length">
+                                            <div class="info-grid">
+                                                <template x-for="(relation, index) in preview.data.relations" :key="relation.name || index">
+                                                    <div class="relation-item">
+                                                        <div class="difference-values">
+                                                            <div><strong x-text="relation.label || relation.name || 'Связь'"></strong></div>
+                                                            <div x-text="relation.action ? `Действие: ${relation.action}` : ''"></div>
+                                                            <div x-text="relation.counts ? `Донор → ${relation.counts.donor}, приёмник → ${relation.counts.target}` : ''"></div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!(preview.data && preview.data.relations && preview.data.relations.length)">
+                                            <p>Связей к переносу нет или они пока не подсчитаны.</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <template x-if="preview.data && preview.data.warnings && preview.data.warnings.length">
+                                <div class="info-card" style="background: rgba(247, 178, 103, 0.18); border-color: rgba(247, 178, 103, 0.4);">
+                                    <h4>Предупреждения</h4>
+                                    <ul class="warning-list">
+                                        <template x-for="(warning, index) in preview.data.warnings" :key="index">
+                                            <li x-text="warning"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section class="panel" x-data="{ showInfo: false }">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <span class="chip">Шаг 4</span>
+                        <span class="panel-header-title">Итоги и запуск объединения</span>
+                    </div>
+                    <button type="button"
+                            class="panel-toggle"
+                            @click="showInfo = !showInfo"
+                            :aria-expanded="showInfo"
+                            aria-controls="step4-explainer">
+                        <span x-text="showInfo ? 'Скрыть пояснение' : 'Пояснение к шагу'"></span>
+                    </button>
+                </div>
+                <div class="panel-explainer" id="step4-explainer" x-show="showInfo" x-transition x-cloak>
+                    <p>Ещё раз оцените сводку и предупреждения. Если всё верно, запускайте объединение — система отправит задачу и покажет статус выполнения.</p>
+                </div>
+                <div class="panel-body">
+                    <template x-if="previewReady()">
+                        <div class="summary-box" x-text="summaryText()"></div>
+                    </template>
+                    <template x-if="!previewReady()">
+                        <div class="summary-box placeholder">Когда предпросмотр будет готов, здесь появится сводка действий перед запуском объединения.</div>
+                    </template>
+
+                    <div class="cta">
+                        <button type="button"
+                                :disabled="!canRunMerge() || loading.merge"
+                                :class="{ 'loading': loading.merge }"
+                                @click="runMerge()">
+                            <template x-if="loading.merge">
+                                <span>Отправляем задачу<span class="loading-dots"><span></span><span></span><span></span></span></span>
+                            </template>
+                            <template x-if="!loading.merge">
+                                <span>Объединить</span>
+                            </template>
+                        </button>
+                        <div class="entity-extra">После запуска задача уйдёт на сервер, а статус выполнения появится ниже.</div>
+                    </div>
+
+                    <template x-if="errors.merge">
+                        <div class="error-inline" x-text="errors.merge"></div>
+                    </template>
+                    <template x-if="infoMessage">
+                        <div class="info-inline" x-text="infoMessage"></div>
+                    </template>
+                </div>
+            </section>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('mergeManager', () => ({
+            csrfToken: '{{ csrf_token }}',
+            loading: {
+                profiles: false,
+                profileMeta: false,
+                targetEntities: false,
+                donorEntities: false,
+                preview: false,
+                merge: false,
+            },
+            errors: {
+                global: '',
+                profile: '',
+                target: '',
+                donor: '',
+                preview: '',
+                merge: '',
+            },
+            infoMessage: '',
+            profiles: [],
+            selectedProfileSlug: '',
+            profileMeta: null,
+            rest: {
+                profiles: null,
+                entities: null,
+                preview: null,
+                merge: null,
+            },
+            filters: {
+                target: '',
+                donor: '',
+            },
+            entities: {
+                target: [],
+                donor: [],
+            },
+            selectedEntities: {
+                target: null,
+                donor: null,
+            },
+            notes: '',
+            preview: {
+                data: null,
+                updatedAt: null,
+            },
+            prefilledDonor: '',
+            prefillHandled: false,
+            init() {
+                this.rest.profiles = new RestManager("api/profiles/", this.csrfToken);
+                this.rest.entities = new RestManager("api/entities/", this.csrfToken);
+                this.rest.preview = new RestManager("api/preview/", this.csrfToken);
+                this.rest.merge = new RestManager("api/merge/", this.csrfToken);
+                this.prefilledDonor = this.extractPrefilledDonor();
+                if (this.prefilledDonor) {
+                    this.filters.donor = this.prefilledDonor;
+                }
+                this.fetchProfiles();
+            },
+            extractPrefilledDonor() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('obj_id') || params.get('donor_id') || '';
+            },
+            async fetchProfiles() {
+                this.loading.profiles = true;
+                this.errors.profile = '';
+                try {
+                    const response = await this.rest.profiles.list();
+                    if (response?.success === false) {
+                        this.errors.profile = response.message || 'Не удалось загрузить список профилей.';
+                        this.profiles = [];
+                        return;
+                    }
+                    const data = response?.data ?? response ?? [];
+                    this.profiles = Array.isArray(data) ? data : [];
+                    if (this.profiles.length) {
+                        const defaultProfile = this.profiles.find(item => item.is_default) || this.profiles[0];
+                        this.selectedProfileSlug = defaultProfile.slug || defaultProfile.label;
+                        await this.handleProfileChange(false);
+                    }
+                } catch (error) {
+                    console.error('fetchProfiles error', error);
+                    this.errors.profile = 'Не удалось загрузить список профилей.';
+                } finally {
+                    this.loading.profiles = false;
+                }
+            },
+            async handleProfileChange(resetEntities = true) {
+                if (!this.selectedProfileSlug) {
+                    this.profileMeta = null;
+                    if (resetEntities) {
+                        this.resetEntities();
+                    }
+                    return;
+                }
+                this.loading.profileMeta = true;
+                this.errors.profile = '';
+                try {
+                    const response = await this.rest.profiles.get(this.selectedProfileSlug);
+                    if (response?.success === false) {
+                        if (resetEntities) {
+                            this.resetEntities();
+                        }
+                        this.profileMeta = null;
+                        this.errors.profile = response.message || 'Ошибка загрузки данных профиля.';
+                        return;
+                    }
+                    this.profileMeta = response?.data ?? response ?? null;
+                    if (resetEntities) {
+                        this.resetEntities();
+                    }
+                    await this.preloadEntities();
+                } catch (error) {
+                    console.error('handleProfileChange error', error);
+                    this.profileMeta = null;
+                    this.errors.profile = 'Ошибка загрузки данных профиля.';
+                } finally {
+                    this.loading.profileMeta = false;
+                }
+            },
+            async preloadEntities() {
+                await this.loadEntities('target', { replace: true });
+                await this.loadEntities('donor', { replace: true });
+            },
+
+            resetEntities() {
+                this.selectedEntities.target = null;
+                this.selectedEntities.donor = null;
+                this.entities.target = [];
+                this.entities.donor = [];
+                this.errors.target = '';
+                this.errors.donor = '';
+                this.errors.preview = '';
+                this.preview.data = null;
+                this.preview.updatedAt = null;
+                this.filters.target = '';
+                if (this.prefilledDonor) {
+                    this.filters.donor = this.prefilledDonor;
+                } else {
+                    this.filters.donor = '';
+                }
+                this.prefillHandled = false;
+            },
+            async loadEntities(type, options = {}) {
+                if (!this.selectedProfileSlug) {
+                    this.errors.profile = 'Сначала выберите профиль.';
+                    return;
+                }
+                const { query = '', replace, skipPrefill = false } = options;
+                const loadingKey = type === 'target' ? 'targetEntities' : 'donorEntities';
+                this.loading[loadingKey] = true;
+                this.errors[type] = '';
+                try {
+                    const params = new URLSearchParams({
+                        profile: this.selectedProfileSlug,
+                        role: type,
+                        limit: query ? '200' : '500',
+                    });
+                    if (query) {
+                        params.set('query', query);
+                    }
+                    const response = await this.rest.entities.list(`?${params.toString()}`);
+                    if (response?.success === false) {
+                        this.errors[type] = response.message || 'Ошибка загрузки списка объектов.';
+                        if (!query) {
+                            this.entities[type] = [];
+                        }
+                        return;
+                    }
+                    let data = response?.data ?? response ?? [];
+                    if (!Array.isArray(data)) {
+                        data = [];
+                    }
+                    const shouldReplace = typeof replace === 'boolean' ? replace : !query;
+                    if (shouldReplace) {
+                        this.entities[type] = data;
+                    } else {
+                        this.entities[type] = this.mergeEntityResults(type, data, true);
+                    }
+                    if (type === 'donor' && this.prefilledDonor && !this.prefillHandled) {
+                        const match = this.entities.donor.find((item) => String(item.id) === String(this.prefilledDonor));
+                        if (match) {
+                            this.selectEntity('donor', match);
+                            this.prefillHandled = true;
+                        } else if (!skipPrefill) {
+                            await this.loadEntities('donor', { query: this.prefilledDonor, replace: false, skipPrefill: true });
+                        } else {
+                            this.prefillHandled = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('loadEntities error', error);
+                    this.errors[type] = 'Ошибка загрузки списка объектов.';
+                    if (!query) {
+                        this.entities[type] = [];
+                    }
+                } finally {
+                    this.loading[loadingKey] = false;
+                }
+            },
+            mergeEntityResults(type, items, prepend = false) {
+                const existing = Array.isArray(this.entities[type]) ? this.entities[type] : [];
+                const ordered = prepend ? [...items, ...existing] : [...existing, ...items];
+                const seen = new Set();
+                const result = [];
+                for (const item of ordered) {
+                    const key = item && item.id !== undefined ? String(item.id) : JSON.stringify(item);
+                    if (seen.has(key)) {
+                        continue;
+                    }
+                    seen.add(key);
+                    result.push(item);
+                }
+                return result;
+            },
+            filteredEntities(type) {
+                const items = Array.isArray(this.entities[type]) ? this.entities[type] : [];
+                const term = (this.filters[type] || '').trim().toLowerCase();
+                if (!term) {
+                    return items;
+                }
+                const tokens = term.split(/\s+/).filter(Boolean);
+                if (!tokens.length) {
+                    return items;
+                }
+                return items.filter((item) => {
+                    const haystack = [item.display, item.label, item.name, item.subtitle, item.id != null ? String(item.id) : '']
+                        .filter(Boolean)
+                        .join(' ')
+                        .toLowerCase();
+                    return tokens.every((token) => haystack.includes(token));
+                });
+            },
+            entityCountLabel(type) {
+                const total = Array.isArray(this.entities[type]) ? this.entities[type].length : 0;
+                if (!total) {
+                    return 'Нет данных';
+                }
+                const filtered = this.filteredEntities(type).length;
+                if (filtered !== total) {
+                    return `Показано: ${filtered} из ${total}`;
+                }
+                return `Всего: ${total}`;
+            },
+            clearFilter(type) {
+                this.filters[type] = '';
+                if (!this.entities[type]?.length) {
+                    this.loadEntities(type, { replace: true });
+                }
+            },
+            async handleFilterChange(type) {
+                const query = (this.filters[type] || '').trim();
+                if (!query) {
+                    return;
+                }
+                if (this.filteredEntities(type).length) {
+                    return;
+                }
+                if (query.length < 2) {
+                    return;
+                }
+                await this.loadEntities(type, { query, replace: false });
+            },
+            async forceReload(type) {
+                const query = (this.filters[type] || '').trim();
+                if (query) {
+                    await this.loadEntities(type, { query, replace: false });
+                } else {
+                    await this.loadEntities(type, { replace: true });
+                }
+            },
+            openAdmin(url) {
+                if (!url) {
+                    return;
+                }
+                window.open(url, '_blank', 'noopener');
+            },
+            selectEntity(type, item) {
+                if (!item) {
+                    return;
+                }
+                const opposite = type === 'target' ? 'donor' : 'target';
+                if (this.selectedEntities[opposite]?.id && this.selectedEntities[opposite].id === item.id) {
+                    this.errors[type] = 'Нельзя выбрать один и тот же объект для донора и приёмника.';
+                    return;
+                }
+                this.errors[type] = '';
+                this.selectedEntities[type] = item;
+                if (this.readyForPreview()) {
+                    this.fetchPreview();
+                }
+            },
+            clearSelection(type) {
+                this.selectedEntities[type] = null;
+                if (type === 'donor') {
+                    this.prefillHandled = true;
+                }
+                this.errors[type] = '';
+                this.preview.data = null;
+                this.preview.updatedAt = null;
+            },
+            readyForPreview() {
+                return Boolean(this.selectedProfileSlug && this.selectedEntities.target?.id && this.selectedEntities.donor?.id);
+            },
+            async fetchPreview() {
+                if (!this.readyForPreview()) {
+                    return;
+                }
+                this.loading.preview = true;
+                this.errors.preview = '';
+                try {
+                    const payload = {
+                        profile: this.selectedProfileSlug,
+                        target_id: this.selectedEntities.target.id,
+                        donor_id: this.selectedEntities.donor.id,
+                        notes: this.notes,
+                    };
+                    const response = await this.rest.preview.post(payload);
+                    if (response?.success === false) {
+                        this.preview.data = null;
+                        this.preview.updatedAt = null;
+                        this.errors.preview = response.message || 'Не удалось получить предпросмотр. Повторите попытку или обратитесь к администратору.';
+                        return;
+                    }
+                    const data = response?.data ?? null;
+                    this.preview.data = data;
+                    this.preview.updatedAt = new Date().toISOString();
+                } catch (error) {
+                    console.error('fetchPreview error', error);
+                    this.preview.data = null;
+                    this.preview.updatedAt = null;
+                    this.errors.preview = 'Не удалось получить предпросмотр. Повторите попытку или обратитесь к администратору.';
+                } finally {
+                    this.loading.preview = false;
+                }
+            },
+            previewReady() {
+                return Boolean(this.preview.data && !this.loading.preview);
+            },
+            canRunMerge() {
+                return Boolean(
+                    !this.loading.preview
+                    && this.preview.data
+                    && this.selectedEntities.target?.id
+                    && this.selectedEntities.donor?.id
+                );
+            },
+            async runMerge() {
+                if (!this.canRunMerge()) {
+                    return;
+                }
+                this.loading.merge = true;
+                this.errors.merge = '';
+                this.infoMessage = '';
+                try {
+                    const payload = {
+                        profile: this.selectedProfileSlug,
+                        target_id: this.selectedEntities.target.id,
+                        donor_id: this.selectedEntities.donor.id,
+                        notes: this.notes,
+                    };
+                    const response = await this.rest.merge.post(payload);
+                    if (response?.success === false) {
+                        this.errors.merge = response.message || 'Не удалось инициировать объединение.';
+                        return;
+                    }
+                    const data = response?.data ?? {};
+                    if (data && typeof data === 'object' && Object.keys(data).length) {
+                        this.preview.data = data;
+                        this.preview.updatedAt = new Date().toISOString();
+                    }
+                    const hardDeleteMeta = data?.actions?.hard_delete || data?.summary?.hard_delete;
+                    if (hardDeleteMeta?.applied) {
+                        const removedDonorId = this.selectedEntities.donor?.id;
+                        if (removedDonorId !== undefined && removedDonorId !== null) {
+                            const keepEntity = (entity) => String(entity?.id) !== String(removedDonorId);
+                            this.entities.donor = this.entities.donor.filter(keepEntity);
+                            this.entities.target = this.entities.target.filter(keepEntity);
+                        }
+                        await this.loadEntities('donor', { replace: true });
+                        await this.loadEntities('target', { replace: true });
+                    }
+                    this.selectedEntities.target = null;
+                    this.selectedEntities.donor = null;
+                    this.errors.target = '';
+                    this.errors.donor = '';
+                    this.prefillHandled = true;
+                    this.infoMessage = response?.message || data.message || 'Запрос отправлен. Дождитесь обновления статуса.';
+                } catch (error) {
+                    console.error('runMerge error', error);
+                    this.errors.merge = 'Не удалось инициировать объединение. Реализуйте `/merge_manager/api/merge/` или проверьте ответ сервера.';
+                } finally {
+                    this.loading.merge = false;
+                }
+            },
+            transferCount() {
+                if (!this.previewReady()) {
+                    return 0;
+                }
+                const summary = this.preview.data?.summary || {};
+                const differencesCount = typeof summary.differences_count === 'number'
+                    ? summary.differences_count
+                    : (Array.isArray(this.preview.data?.differences) ? this.preview.data.differences.length : 0);
+                const relationsCount = typeof summary.relations_count === 'number'
+                    ? summary.relations_count
+                    : (Array.isArray(this.preview.data?.relations)
+                        ? this.preview.data.relations.reduce((total, item) => total + (item?.counts?.donor || 0), 0)
+                        : 0);
+                return differencesCount + relationsCount;
+            },
+
+            summaryText() {
+                if (!this.previewReady()) {
+                    return '';
+                }
+                const summary = this.preview.data?.summary || {};
+                const targetLabel = summary.target_label || this.getSelectedLabel('target');
+                const donorLabel = summary.donor_label || this.getSelectedLabel('donor');
+                const differencesCount = summary.differences_count ?? summary.differences ?? (this.preview.data?.differences?.length || 0);
+                const relationsCount = typeof summary.relations_count === "number"
+                    ? summary.relations_count
+                    : (Array.isArray(this.preview.data?.relations)
+                        ? this.preview.data.relations.reduce((total, item) => total + (item?.counts?.donor || 0), 0)
+                        : 0);
+                let parts = [];
+                parts.push(`${donorLabel} → ${targetLabel}`);
+                parts.push(`Различий: ${differencesCount}`);
+                parts.push(`Связей к переносу: ${relationsCount}`);
+                const softDelete = summary.soft_delete || this.preview.data?.actions?.soft_delete;
+                if (softDelete?.field) {
+                    parts.push(`Soft-delete: ${softDelete.field} = ${softDelete.value}`);
+                }
+                return parts.join(' · ');
+            },
+            formatTimestamp(timestamp) {
+                if (!timestamp) {
+                    return '';
+                }
+                try {
+                    return new Date(timestamp).toLocaleTimeString();
+                } catch (error) {
+                    return timestamp;
+                }
+            },
+            formatValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return '—';
+                }
+                if (Array.isArray(value)) {
+                    return value.join(', ');
+                }
+                if (typeof value === 'object') {
+                    const entries = Object.entries(value).map(([key, val]) => `${key}: ${val}`);
+                    return entries.join('; ');
+                }
+                return String(value);
+            },
+            getSelectedLabel(type) {
+                const entity = this.selectedEntities[type];
+                if (!entity) {
+                    return 'Не выбрано';
+                }
+                return entity.display || entity.label || entity.name || `ID ${entity.id}`;
+            },
+            highlightSelected(type, id) {
+                return this.selectedEntities[type]?.id === id;
+            },
+        }));
+    });
+</script>
+{% endblock %}
